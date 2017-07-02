@@ -27,3 +27,5 @@ class Base:
     def getbyid(self, entry):
         pass
 
+    def deleteall(self):
+        pass

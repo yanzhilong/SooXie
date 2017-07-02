@@ -70,3 +70,7 @@ class Image(Base):
         shoe.Url = row['Url']
         shoe.ShoeId = row['ShoeId']
         return shoe
+
+    def deleteall(self):
+        connection = db.engine.connect()
+        connection.execute(ImageTable.delete())

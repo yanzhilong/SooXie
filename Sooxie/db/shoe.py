@@ -81,3 +81,23 @@ class Shoe(Base):
         shoe.Market = row['Market']
         return shoe
 
+    def getbyurl(self, entry):
+        connection = db.engine.connect()
+        s = select([ShoeTable]).where(ShoeTable.c.Url == entry.Url)
+        row = connection.execute(s).fetchone()
+        if row is None:
+            return None
+        shoe = ShoeDomain()
+        shoe.Id = row['Id']
+        shoe.Title = row['Title']
+        shoe.Url = row['Url']
+        shoe.No = row['No']
+        shoe.Price = row['Price']
+        shoe.Popularity = row['Popularity']
+        shoe.Update = row['Update']
+        shoe.Market = row['Market']
+        return shoe
+
+    def deleteall(self):
+        connection = db.engine.connect()
+        connection.execute(ShoeTable.delete())

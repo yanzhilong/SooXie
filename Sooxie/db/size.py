@@ -70,3 +70,7 @@ class Size(Base):
         shoe.Num = row['Num']
         shoe.ShoeId = row['ShoeId']
         return shoe
+
+    def deleteall(self):
+        connection = db.engine.connect()
+        connection.execute(SizeTable.delete())

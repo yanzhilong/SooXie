@@ -77,14 +77,13 @@ class SooXieSpider(scrapy.Spider):
         # shoe = shoedb.getbyid(shoedomain)
         # print(shoe.Title)
 
-
-
+        # self.deleteall()
         # return
         shoe = ShoeDomain()
         shoe.Id = str(uuid.uuid1())
         print(u"处理当前页面" + str(self.page))
         # 得到所有的鞋子当前页的主页面数据
-        shoeuls = response.css("ul.pro");
+        shoeuls = response.css("ul.pro")
 
         for ul in shoeuls:
             self.log(u'循环遍历第%d页的商品' % self.page)
@@ -101,7 +100,7 @@ class SooXieSpider(scrapy.Spider):
                     # 发起一个请求并由详情页面处理
                     yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
         # 得到下一页的链接并打开
-        self.page += 1;
+        self.page += 1
         yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
 
     # 搜鞋的详情页面
@@ -112,22 +111,23 @@ class SooXieSpider(scrapy.Spider):
         shoe = response.meta["shoe"]
         shoe.Url = response.url
         shoe.Title = response.css("div.xgr_3_h h2.xgr_3p::text").extract_first()
+        shoe.Title = shoe.Title.strip()
         shoe.No = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
         shoe.Price = response.css("div.xgr_3_h div.xgr_3p em::text").extract_first()
         sizestmp  = response.css("div.xgr_3_h div.xgr_3p")[3].css("li::attr(datavalue)").extract()
-        shoe.Sizes = self.operatorsizes(sizestmp,shoe.Id)
+        shoe.Sizes = self.operatorsizes(sizestmp)
         popularityandupdate = response.css("div.xgr_3_h div.xgr_3p")[2].css("strong")
         shoe.Popularity = popularityandupdate[0].css("strong::text").extract_first()
         if len(popularityandupdate) > 1:
             shoe.Update = popularityandupdate[1].css("strong font::text").extract_first()
         colorstmp = response.css("div.xgr_3_h div.xgr_3p")[4].css("li::attr(datavalue)").extract()
-        shoe.Colors = self.operatorcolors(colorstmp, shoe.Id);
+        shoe.Colors = self.operatorcolors(colorstmp)
         imagestmp = response.css("div.xgr_5 img.scrollLoading::attr(data-url)").extract()
         # self.log(u'图片大小')
         # self.log(imagestmp)
-        shoe.Images = self.operatorimages(imagestmp, shoe.Id)
+        shoe.Images = self.operatorimages(imagestmp)
         shoeid = self.get_shoe_id(response.url)
-        shoe.No = shoeid
+        # shoe.No = shoeid
         # 请求鞋子参数
         healurl = response.urljoin("/handler/getSXHandler.ashx")
         self.log(u'请求属性页面' + healurl)
@@ -142,7 +142,7 @@ class SooXieSpider(scrapy.Spider):
         shoe = response.meta["shoe"]
         shoeid = response.meta["shoeid"]
         propertyemp = response.css("ul.attributes-list li::text").extract()
-        shoe.Properties = self.operatorpropertys(propertyemp, shoe.Id)
+        shoe.Properties = self.operatorpropertys(propertyemp)
         if shoe.Properties is None or len(shoe.Properties) == 0:
             return
         # 请求主图列表
@@ -164,7 +164,7 @@ class SooXieSpider(scrapy.Spider):
         self.log(u'到达请求鞋子主图页面')
         shoe = response.meta["shoe"]
         mainimagestmp = response.css("img::attr(bimg)").extract()
-        shoe.MainImages = self.operatormainimages(mainimagestmp, shoe.Id)
+        shoe.MainImages = self.operatormainimages(mainimagestmp)
         return self.last_action(shoe)
 
     def last_action(self, shoe):
@@ -175,8 +175,10 @@ class SooXieSpider(scrapy.Spider):
         property = PropertyDb()
         sizedb = SizeDb()
         colordb = ColorDb()
+        # if shoedb.getbyurl(shoe) is not None:
+        #     self.log(u'当前商品 %d 不为空' % shoe.No)
+        #     return
         shoenew = self.operatorshoe(shoe)
-
         shoedb.addentry(shoenew)
         imagedb.addentrys(shoe.Images)
         mainimagedb.addentrys(shoe.MainImages)
@@ -185,53 +187,49 @@ class SooXieSpider(scrapy.Spider):
         colordb.addentrys(shoe.Colors)
         yield shoe
 
-    def operatorsizes(self, list, shoeid):
+    def operatorsizes(self, list):
         sizeslist = []
         for si in list:
             size = SizeDomain()
             size.Id = str(uuid.uuid1())
             size.Num = si
-            size.ShoeId = shoeid
             sizeslist.append(size)
         return sizeslist
 
-    def operatorcolors(self, list, shoeid):
+    def operatorcolors(self, list):
         colorlist = []
         for col in list:
             color = ColorDomain()
             color.Id = str(uuid.uuid1())
             color.Name = col
-            color.ShoeId = shoeid
             colorlist.append(color)
         return colorlist
 
-    def operatorimages(self, list, shoeid):
+    def operatorimages(self, list):
         imageslist = []
         for ima in list:
             image = ImageDomain()
             image.Id = str(uuid.uuid1())
             image.Url = ima
-            image.ShoeId = shoeid
             imageslist.append(image)
         return imageslist
 
-    def operatorpropertys(self, list, shoeid):
+    def operatorpropertys(self, list):
         propertylist = []
         for pro in list:
             property = PropertyDomain()
             property.Id = str(uuid.uuid1())
-            property.Name = pro
-            property.ShoeId = shoeid
+            property.Name = pro.split(": ")[0]
+            property.Value = pro.split(": ")[1]
             propertylist.append(property)
         return propertylist
 
-    def operatormainimages(self, list, shoeid):
+    def operatormainimages(self, list):
         mainimagelist = []
         for ima in list:
             mainimage = MainImageDomain()
             mainimage.Id = str(uuid.uuid1())
             mainimage.Url = ima
-            mainimage.ShoeId = shoeid
             mainimagelist.append(mainimage)
         return mainimagelist
 
@@ -250,3 +248,18 @@ class SooXieSpider(scrapy.Spider):
         for mima in shoe.MainImages:
             mima.ShoeId = shoe.Id
         return shoe
+
+    def deleteall(self):
+        shoedb = ShoeDb()
+        imagedb = ImageDb()
+        mainimagedb = MainImageDb()
+        property = PropertyDb()
+        sizedb = SizeDb()
+        colordb = ColorDb()
+
+        imagedb.deleteall()
+        mainimagedb.deleteall()
+        property.deleteall()
+        sizedb.deleteall()
+        colordb.deleteall()
+        shoedb.deleteall()

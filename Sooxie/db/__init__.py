@@ -23,14 +23,14 @@ ShoeTable = Table('shoe', metadata,
 # 详情图实体
 ImageTable = Table('Image', metadata,
               Column('Id', String(36), primary_key=True),
-              Column('Url', String(50)),
+              Column('Url', String(250)),
               Column('ShoeId', None, ForeignKey('shoe.Id')),
               )
 
 # 主图实体
 MainImageTable = Table('MainImage', metadata,
                   Column('Id', String(36), primary_key=True),
-                  Column('Url', String(50)),
+                  Column('Url', String(250)),
                   Column('ShoeId', None, ForeignKey('shoe.Id')),
                   )
 
@@ -38,6 +38,7 @@ MainImageTable = Table('MainImage', metadata,
 PropertyTable = Table('Property', metadata,
                      Column('Id', String(36), primary_key=True),
                      Column('Name', String(50)),
+                     Column('Value', String(50)),
                      Column('ShoeId', None, ForeignKey('shoe.Id')),
                      )
 

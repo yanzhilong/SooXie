@@ -12,7 +12,7 @@ class Property(Base):
         pass
 
     def addentry(self, entry):
-        ins = PropertyTable.insert().values(Id=entry.Id, Name=entry.Name, ShoeId=entry.ShoeId)
+        ins = PropertyTable.insert().values(Id=entry.Id, Name=entry.Name, Value=entry.Value, ShoeId=entry.ShoeId)
         conn = db.engine.connect()
         conn.execute(ins)
 
@@ -21,7 +21,7 @@ class Property(Base):
         trans = connection.begin()
         try:
             for entry in entrys:
-                ins = PropertyTable.insert().values(Id=entry.Id, Name=entry.Name, ShoeId=entry.ShoeId)
+                ins = PropertyTable.insert().values(Id=entry.Id, Name=entry.Name, Value=entry.Value, ShoeId=entry.ShoeId)
                 connection.execute(ins)
             trans.commit()
         except Exception,e:
@@ -31,7 +31,7 @@ class Property(Base):
         connection = db.engine.connect()
         stmt = PropertyTable.update(). \
             where(PropertyTable.c.Id == entry.Id). \
-            values(Name=entry.Name, ShoeId=entry.ShoeId)
+            values(Name=entry.Name, Value=entry.Value, ShoeId=entry.ShoeId)
         connection.execute(stmt)
 
     def updateentrys(self, entrys):
@@ -41,7 +41,7 @@ class Property(Base):
             for entry in entrys:
                 stmt = PropertyTable.update(). \
                     where(PropertyTable.c.Id == entry.Id). \
-                    values(Name=entry.Name, ShoeId=entry.ShoeId)
+                    values(Name=entry.Name, Value=entry.Value, ShoeId=entry.ShoeId)
                 connection.execute(stmt)
             trans.commit()
         except Exception, e:
@@ -68,5 +68,10 @@ class Property(Base):
         shoe = ShoeDomain()
         shoe.Id = row['Id']
         shoe.Name = row['Name']
+        shoe.Value = row['Value']
         shoe.ShoeId = row['ShoeId']
         return shoe
+
+    def deleteall(self):
+        connection = db.engine.connect()
+        connection.execute(PropertyTable.delete())

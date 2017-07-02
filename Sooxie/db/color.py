@@ -70,3 +70,7 @@ class Color(Base):
         shoe.Name = row['Name']
         shoe.ShoeId = row['ShoeId']
         return shoe
+
+    def deleteall(self):
+        connection = db.engine.connect()
+        connection.execute(ColorTable.delete())

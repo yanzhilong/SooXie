@@ -44,6 +44,7 @@ class Property:
     def __init__(self):
         self.Id = None
         self.Name = None
+        self.Value = None
         self.ShoeId = None
 
 
