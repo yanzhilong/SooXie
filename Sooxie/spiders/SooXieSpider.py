@@ -13,7 +13,7 @@ from Sooxie.db.mainimage import MainImage as MainImageDb
 from Sooxie.db.property import Property as PropertyDb
 from Sooxie.db.size import Size as SizeDb
 from Sooxie.db.color import Color as ColorDb
-
+from Sooxie.items import SooxieItem
 
 import re
 import uuid
@@ -86,7 +86,7 @@ class SooXieSpider(scrapy.Spider):
         shoeuls = response.css("ul.pro")
 
         for ul in shoeuls:
-            self.log(u'循环遍历第%d页的商品' % self.page)
+            # self.log(u'循环遍历第%d页的商品' % self.page)
             shoe.Market = ul.css("a.scico::text").extract_first()
             # print(u"市场:" + shoe.market)
             price_num = ul.css("li.rz div.left strong::text").extract_first()
@@ -101,16 +101,19 @@ class SooXieSpider(scrapy.Spider):
                     yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
         # 得到下一页的链接并打开
         self.page += 1
-        yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
+        # yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
 
     # 搜鞋的详情页面
     def show_details(self, response):
 
         # self.log(u'到达详情页面')
-        self.count += 1
+
         shoe = response.meta["shoe"]
         shoe.Url = response.url
         shoe.Title = response.css("div.xgr_3_h h2.xgr_3p::text").extract_first()
+        print(u"详情页title")
+        print(shoe.Title)
+
         shoe.Title = shoe.Title.strip()
         shoe.No = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
         shoe.Price = response.css("div.xgr_3_h div.xgr_3p em::text").extract_first()
@@ -130,7 +133,11 @@ class SooXieSpider(scrapy.Spider):
         # shoe.No = shoeid
         # 请求鞋子参数
         healurl = response.urljoin("/handler/getSXHandler.ashx")
-        self.log(u'请求属性页面' + healurl)
+        # self.log(u'请求属性页面' + healurl)
+
+        print(u"详情页title")
+        print(shoe.Title)
+
         # 继续请求主要属性参数
         return [FormRequest(url=healurl,
                             formdata={'p': "xd", 'id': shoeid},
@@ -138,7 +145,7 @@ class SooXieSpider(scrapy.Spider):
                             meta={"shoe": shoe, "shoeid": shoeid}), ]
 
     def getHead(self, response):
-        self.log(u'到达请求鞋子属性页面')
+        # self.log(u'到达请求鞋子属性页面')
         shoe = response.meta["shoe"]
         shoeid = response.meta["shoeid"]
         propertyemp = response.css("ul.attributes-list li::text").extract()
@@ -161,31 +168,22 @@ class SooXieSpider(scrapy.Spider):
         return pageid
 
     def getImages(self, response):
-        self.log(u'到达请求鞋子主图页面')
+        # self.log(u'到达请求鞋子主图页面')
         shoe = response.meta["shoe"]
         mainimagestmp = response.css("img::attr(bimg)").extract()
         shoe.MainImages = self.operatormainimages(mainimagestmp)
         return self.last_action(shoe)
 
     def last_action(self, shoe):
-        self.log(u'完成第 %d 个商品' % self.count + u'的爬虫')
-        shoedb = ShoeDb()
-        imagedb = ImageDb()
-        mainimagedb = MainImageDb()
-        property = PropertyDb()
-        sizedb = SizeDb()
-        colordb = ColorDb()
-        # if shoedb.getbyurl(shoe) is not None:
-        #     self.log(u'当前商品 %d 不为空' % shoe.No)
-        #     return
+        self.count += 1
         shoenew = self.operatorshoe(shoe)
-        shoedb.addentry(shoenew)
-        imagedb.addentrys(shoe.Images)
-        mainimagedb.addentrys(shoe.MainImages)
-        property.addentrys(shoe.Properties)
-        sizedb.addentrys(shoe.Sizes)
-        colordb.addentrys(shoe.Colors)
-        yield shoe
+        print(u'完成第 %d 个商品' % self.count + u'的爬虫')
+        print(shoenew.Title)
+        # yield shoe
+        yield SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, No=shoenew.No, Price=shoenew.Price,
+                         Popularity=shoenew.Popularity, Update=shoenew.Update, Market=shoenew.Market,
+                         Sizes=shoenew.Sizes, Colors=shoenew.Colors, Images=shoenew.Images,
+                         MainImages=shoenew.MainImages, Properties=shoenew.Properties)
 
     def operatorsizes(self, list):
         sizeslist = []
@@ -234,19 +232,22 @@ class SooXieSpider(scrapy.Spider):
         return mainimagelist
 
     def operatorshoe(self, shoe):
-        self.log(u'主图片大小')
-        self.log(shoe.MainImages)
         shoe.Id = str(uuid.uuid1())
         for size in shoe.Sizes:
             size.ShoeId = shoe.Id
+            size.Id = str(uuid.uuid1())
         for col in shoe.Colors:
             col.ShoeId = shoe.Id
+            col.Id = str(uuid.uuid1())
         for ima in shoe.Images:
             ima.ShoeId = shoe.Id
+            ima.Id = str(uuid.uuid1())
         for pro in shoe.Properties:
             pro.ShoeId = shoe.Id
+            pro.Id = str(uuid.uuid1())
         for mima in shoe.MainImages:
             mima.ShoeId = shoe.Id
+            mima.Id = str(uuid.uuid1())
         return shoe
 
     def deleteall(self):

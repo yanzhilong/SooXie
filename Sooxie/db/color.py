@@ -25,6 +25,7 @@ class Color(Base):
                 connection.execute(ins)
             trans.commit()
         except Exception,e:
+            print(u"添加color异常" + e.message)
             trans.rollback()
 
     def updateentry(self, entry):

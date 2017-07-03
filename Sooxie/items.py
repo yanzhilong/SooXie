@@ -10,5 +10,16 @@ import scrapy
 
 class SooxieItem(scrapy.Item):
     # define the fields for your item here like:
-    # name = scrapy.Field()
-    pass
+    Id = scrapy.Field()
+    Title = scrapy.Field()
+    Url = scrapy.Field()
+    No = scrapy.Field()
+    Price = scrapy.Field()
+    Popularity = scrapy.Field()
+    Update = scrapy.Field()
+    Market = scrapy.Field()
+    Sizes = scrapy.Field()
+    Colors = scrapy.Field()
+    Images = scrapy.Field()
+    MainImages = scrapy.Field()
+    Properties = scrapy.Field()
