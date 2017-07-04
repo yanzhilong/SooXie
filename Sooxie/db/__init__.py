@@ -62,5 +62,5 @@ def init_db_engine(connect_str):
     engine = create_engine(connect_str, poolclass=NullPool)
 
 
-def create_table(self):
-    metadata.create_all(self.engine)
+def create_table():
+    metadata.create_all(engine)

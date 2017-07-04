@@ -14,6 +14,7 @@ from Sooxie.db.property import Property as PropertyDb
 from Sooxie.db.size import Size as SizeDb
 from Sooxie.db.color import Color as ColorDb
 from Sooxie.items import SooxieItem
+from Sooxie import db
 
 import re
 import uuid
@@ -77,6 +78,7 @@ class SooXieSpider(scrapy.Spider):
         # shoe = shoedb.getbyid(shoedomain)
         # print(shoe.Title)
 
+        # db.create_table()
         # self.deleteall()
         # return
         shoe = ShoeDomain()
@@ -95,24 +97,48 @@ class SooXieSpider(scrapy.Spider):
                 # 得到链接并请求这个页面
                 details_link = ul.css("li.img a::attr(href)").extract_first()
                 if details_link is not None:
+                    print (u"详情url" + details_link)
                     # count += 1
                     # print (u"处理第" + str(count) + u"个商品")
                     # 发起一个请求并由详情页面处理
-                    yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
+                    shoeoperator = ShoeOperator()
+                    print(id(shoeoperator))
+                    # yield scrapy.Request(details_link, callback=shoeoperator.show_details, meta={"shoe": shoe})
         # 得到下一页的链接并打开
         self.page += 1
         # yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
 
+    def deleteall(self):
+        shoedb = ShoeDb()
+        imagedb = ImageDb()
+        mainimagedb = MainImageDb()
+        property = PropertyDb()
+        sizedb = SizeDb()
+        colordb = ColorDb()
+
+        imagedb.deleteall()
+        mainimagedb.deleteall()
+        property.deleteall()
+        sizedb.deleteall()
+        colordb.deleteall()
+        shoedb.deleteall()
+
+
+class ShoeOperator:
+
+    def __init__(self):
+        pass
+
     # 搜鞋的详情页面
     def show_details(self, response):
 
-        # self.log(u'到达详情页面')
+        print(u'到达详情页面')
 
         shoe = response.meta["shoe"]
         shoe.Url = response.url
         shoe.Title = response.css("div.xgr_3_h h2.xgr_3p::text").extract_first()
-        print(u"详情页title")
-        print(shoe.Title)
+        # print(u"详情页title")
+        # print(shoe.Title)
 
         shoe.Title = shoe.Title.strip()
         shoe.No = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
@@ -135,17 +161,17 @@ class SooXieSpider(scrapy.Spider):
         healurl = response.urljoin("/handler/getSXHandler.ashx")
         # self.log(u'请求属性页面' + healurl)
 
-        print(u"详情页title")
-        print(shoe.Title)
+        # print(u"详情页title")
+        # print(shoe.Title)
 
         # 继续请求主要属性参数
-        return [FormRequest(url=healurl,
+        yield FormRequest(url=healurl,
                             formdata={'p': "xd", 'id': shoeid},
                             callback=self.getHead,
-                            meta={"shoe": shoe, "shoeid": shoeid}), ]
+                            meta={"shoe": shoe, "shoeid": shoeid})
 
     def getHead(self, response):
-        # self.log(u'到达请求鞋子属性页面')
+        print(u'到达请求鞋子属性页面')
         shoe = response.meta["shoe"]
         shoeid = response.meta["shoeid"]
         propertyemp = response.css("ul.attributes-list li::text").extract()
@@ -155,10 +181,10 @@ class SooXieSpider(scrapy.Spider):
         # 请求主图列表
         healurl = response.urljoin("/handler/loadImgHandler.ashx")
         # 继续请求主要属性参数
-        return [FormRequest(url=healurl,
+        yield FormRequest(url=healurl,
                             formdata={'p': "xd", 'id': shoeid},
                             callback=self.getImages,
-                            meta={"shoe": shoe}), ]
+                            meta={"shoe": shoe})
 
     def get_shoe_id(self,url):
         p1 = "\\d+"  # 这是我们写的正则表达式规则，你现在可以不理解啥意思
@@ -168,19 +194,19 @@ class SooXieSpider(scrapy.Spider):
         return pageid
 
     def getImages(self, response):
-        # self.log(u'到达请求鞋子主图页面')
+        print(u'到达请求鞋子主图页面')
         shoe = response.meta["shoe"]
         mainimagestmp = response.css("img::attr(bimg)").extract()
         shoe.MainImages = self.operatormainimages(mainimagestmp)
-        return self.last_action(shoe)
+        yield self.last_action(shoe)
 
     def last_action(self, shoe):
-        self.count += 1
+        # self.count += 1
         shoenew = self.operatorshoe(shoe)
-        print(u'完成第 %d 个商品' % self.count + u'的爬虫')
+        # print(u'完成第 %d 个商品' % self.count + u'的爬虫')
         print(shoenew.Title)
         # yield shoe
-        yield SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, No=shoenew.No, Price=shoenew.Price,
+        return SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, No=shoenew.No, Price=shoenew.Price,
                          Popularity=shoenew.Popularity, Update=shoenew.Update, Market=shoenew.Market,
                          Sizes=shoenew.Sizes, Colors=shoenew.Colors, Images=shoenew.Images,
                          MainImages=shoenew.MainImages, Properties=shoenew.Properties)
@@ -250,17 +276,4 @@ class SooXieSpider(scrapy.Spider):
             mima.Id = str(uuid.uuid1())
         return shoe
 
-    def deleteall(self):
-        shoedb = ShoeDb()
-        imagedb = ImageDb()
-        mainimagedb = MainImageDb()
-        property = PropertyDb()
-        sizedb = SizeDb()
-        colordb = ColorDb()
 
-        imagedb.deleteall()
-        mainimagedb.deleteall()
-        property.deleteall()
-        sizedb.deleteall()
-        colordb.deleteall()
-        shoedb.deleteall()
