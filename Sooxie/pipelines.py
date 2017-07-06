@@ -29,6 +29,7 @@ class SooxiePipeline(object):
         shoedomain.Popularity = item['Popularity']
         shoedomain.Update = item['Update']
         shoedomain.Market = item['Market']
+        shoedomain.Sort = item['Sort']
         shoedomain.Sizes = item['Sizes']
         shoedomain.Colors = item['Colors']
         shoedomain.Images = item['Images']

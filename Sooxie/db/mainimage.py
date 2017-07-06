@@ -12,7 +12,7 @@ class MainImage(Base):
         pass
 
     def addentry(self, entry):
-        ins = MainImageTable.insert().values(Id=entry.Id, Url=entry.Url, ShoeId=entry.ShoeId)
+        ins = MainImageTable.insert().values(Id=entry.Id, Url=entry.Url, Sort=entry.Sort, ShoeId=entry.ShoeId)
         conn = db.engine.connect()
         conn.execute(ins)
 
@@ -21,7 +21,7 @@ class MainImage(Base):
         trans = connection.begin()
         try:
             for entry in entrys:
-                ins = MainImageTable.insert().values(Id=entry.Id, Url=entry.Url, ShoeId=entry.ShoeId)
+                ins = MainImageTable.insert().values(Id=entry.Id, Url=entry.Url, Sort=entry.Sort, ShoeId=entry.ShoeId)
                 connection.execute(ins)
             trans.commit()
         except Exception,e:
@@ -32,7 +32,7 @@ class MainImage(Base):
         connection = db.engine.connect()
         stmt = MainImageTable.update(). \
             where(MainImageTable.c.Id == entry.Id). \
-            values(Url=entry.Url, ShoeId=entry.ShoeId)
+            values(Url=entry.Url, Sort=entry.Sort, ShoeId=entry.ShoeId)
         connection.execute(stmt)
 
     def updateentrys(self, entrys):
@@ -42,7 +42,7 @@ class MainImage(Base):
             for entry in entrys:
                 stmt = MainImageTable.update(). \
                     where(MainImageTable.c.Id == entry.Id). \
-                    values(Url=entry.Url, ShoeId=entry.ShoeId)
+                    values(Url=entry.Url, Sort=entry.Sort, ShoeId=entry.ShoeId)
                 connection.execute(stmt)
             trans.commit()
         except Exception, e:
@@ -69,6 +69,7 @@ class MainImage(Base):
         shoe = ShoeDomain()
         shoe.Id = row['Id']
         shoe.Url = row['Url']
+        shoe.Sort = row['Sort']
         shoe.ShoeId = row['ShoeId']
         return shoe
 

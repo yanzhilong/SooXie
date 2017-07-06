@@ -18,12 +18,14 @@ ShoeTable = Table('shoe', metadata,
                 Column('Popularity', Integer),
                 Column('Update', String(50)),
                 Column('Market', String(50)),
+                Column('Sort', Integer),
                 )
 
 # 详情图实体
 ImageTable = Table('Image', metadata,
               Column('Id', String(36), primary_key=True),
               Column('Url', String(250)),
+              Column('Sort', Integer),
               Column('ShoeId', None, ForeignKey('shoe.Id')),
               )
 
@@ -31,6 +33,7 @@ ImageTable = Table('Image', metadata,
 MainImageTable = Table('MainImage', metadata,
                   Column('Id', String(36), primary_key=True),
                   Column('Url', String(250)),
+                  Column('Sort', Integer),
                   Column('ShoeId', None, ForeignKey('shoe.Id')),
                   )
 

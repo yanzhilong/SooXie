@@ -13,7 +13,7 @@ class Shoe(Base):
 
     def addentry(self, entry):
         ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, No=entry.No, Price=entry.Price,
-                                        Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market)
+                                        Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
         conn = db.engine.connect()
         conn.execute(ins)
 
@@ -24,7 +24,7 @@ class Shoe(Base):
             for entry in entrys:
                 ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, No=entry.No,
                                                 Price=entry.Price,
-                                                Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market)
+                                                Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
                 connection.execute(ins)
             trans.commit()
         except Exception,e:
@@ -34,7 +34,7 @@ class Shoe(Base):
         connection = db.engine.connect()
         stmt = ShoeTable.update(). \
             where(ShoeTable.c.Id == entry.Id). \
-            values(Title=entry.Title, Url=entry.Url, No=entry.No, Price=entry.Price, Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market)
+            values(Title=entry.Title, Url=entry.Url, No=entry.No, Price=entry.Price, Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
         connection.execute(stmt)
 
     def updateentrys(self, entrys):
@@ -46,6 +46,7 @@ class Shoe(Base):
                     where(ShoeTable.c.Id == entry.Id). \
                     values(Title=entry.Title, Url=entry.Url, No=entry.No,
                            Price=entry.Price,
+                           Sort=entry.Sort,
                            Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market)
                 connection.execute(stmt)
             trans.commit()
@@ -79,6 +80,7 @@ class Shoe(Base):
         shoe.Popularity = row['Popularity']
         shoe.Update = row['Update']
         shoe.Market = row['Market']
+        shoe.Sort = row['Sort']
         return shoe
 
     def getbyurl(self, entry):

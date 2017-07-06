@@ -18,6 +18,7 @@ class SooxieItem(scrapy.Item):
     Popularity = scrapy.Field()
     Update = scrapy.Field()
     Market = scrapy.Field()
+    Sort = scrapy.Field()
     Sizes = scrapy.Field()
     Colors = scrapy.Field()
     Images = scrapy.Field()

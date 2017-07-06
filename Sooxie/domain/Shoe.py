@@ -13,6 +13,7 @@ class Shoe:
         self.Popularity = None
         self.Update = None
         self.Market = None
+        self.Sort = None
         self.Sizes = None
         self.Colors = None
         self.Images = None
@@ -26,6 +27,7 @@ class Image:
     def __init__(self):
         self.Id = None
         self.Url = None
+        self.Sort = None
         self.ShoeId = None
 
 
@@ -35,6 +37,7 @@ class MainImage:
     def __init__(self):
         self.Id = None
         self.Url = None
+        self.Sort = None
         self.ShoeId = None
 
 
