@@ -9,54 +9,54 @@ engine = None
 metadata = MetaData()
 
 # 宝贝实体
-ShoeTable = Table('shoe', metadata,
+ShoeTable = Table('sx_shoe', metadata,
                 Column('Id', String(36), primary_key=True),
                 Column('Title', String(50)),
                 Column('Url', String(50)),
-                Column('No', String(50)),
+                Column('Number', String(50)),
                 Column('Price', Float),
                 Column('Popularity', Integer),
-                Column('Update', String(50)),
+                Column('UpdateStr', String(50)),
                 Column('Market', String(50)),
                 Column('Sort', Integer),
                 )
 
 # 详情图实体
-ImageTable = Table('Image', metadata,
+ImageTable = Table('sx_image', metadata,
               Column('Id', String(36), primary_key=True),
               Column('Url', String(250)),
               Column('Sort', Integer),
-              Column('ShoeId', None, ForeignKey('shoe.Id')),
+              Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
               )
 
 # 主图实体
-MainImageTable = Table('MainImage', metadata,
+MainImageTable = Table('sx_mainimage', metadata,
                   Column('Id', String(36), primary_key=True),
                   Column('Url', String(250)),
                   Column('Sort', Integer),
-                  Column('ShoeId', None, ForeignKey('shoe.Id')),
+                  Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
                   )
 
 # 属性实体
-PropertyTable = Table('Property', metadata,
+PropertyTable = Table('sx_property', metadata,
                      Column('Id', String(36), primary_key=True),
                      Column('Name', String(50)),
                      Column('Value', String(50)),
-                     Column('ShoeId', None, ForeignKey('shoe.Id')),
+                     Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
                      )
 
 # 尺码实体
-SizeTable = Table('Size', metadata,
+SizeTable = Table('sx_size', metadata,
              Column('Id', String(36), primary_key=True),
              Column('Num', Integer),
-             Column('ShoeId', None, ForeignKey('shoe.Id')),
+             Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
              )
 
 # 颜色实体
-ColorTable = Table('Color', metadata,
+ColorTable = Table('sx_color', metadata,
               Column('Id', String(36), primary_key=True),
               Column('Name', String(50)),
-              Column('ShoeId', None, ForeignKey('shoe.Id')),
+              Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
               )
 
 

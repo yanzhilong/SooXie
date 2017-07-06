@@ -80,8 +80,8 @@ class SooXieSpider(scrapy.Spider):
         # print(shoe.Title)
 
         # db.create_table()
-        self.deleteall()
-        return
+        # self.deleteall()
+        # return
         shoe = ShoeDomain()
         shoe.Id = str(uuid.uuid1())
         print(u"处理当前页面" + str(self.page))
