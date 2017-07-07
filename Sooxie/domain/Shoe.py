@@ -8,10 +8,10 @@ class Shoe:
         self.Id = None
         self.Title = None
         self.Url = None
-        self.No = None  # 货号
+        self.Number = None  # 货号
         self.Price = None
         self.Popularity = None
-        self.Update = None
+        self.UpdateStr = None
         self.Market = None
         self.Sort = None
         self.Sizes = None

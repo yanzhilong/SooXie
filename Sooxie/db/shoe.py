@@ -12,8 +12,8 @@ class Shoe(Base):
         pass
 
     def addentry(self, entry):
-        ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, No=entry.No, Price=entry.Price,
-                                        Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
+        ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, Number=entry.Number, Price=entry.Price,
+                                        Popularity=entry.Popularity, UpdateStr=entry.UpdateStr, Market=entry.Market, Sort=entry.Sort)
         conn = db.engine.connect()
         conn.execute(ins)
 
@@ -22,9 +22,9 @@ class Shoe(Base):
         trans = connection.begin()
         try:
             for entry in entrys:
-                ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, No=entry.No,
+                ins = ShoeTable.insert().values(Id=entry.Id, Title=entry.Title, Url=entry.Url, Number=entry.Number,
                                                 Price=entry.Price,
-                                                Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
+                                                Popularity=entry.Popularity, UpdateStr=entry.UpdateStr, Market=entry.Market, Sort=entry.Sort)
                 connection.execute(ins)
             trans.commit()
         except Exception,e:
@@ -34,7 +34,7 @@ class Shoe(Base):
         connection = db.engine.connect()
         stmt = ShoeTable.update(). \
             where(ShoeTable.c.Id == entry.Id). \
-            values(Title=entry.Title, Url=entry.Url, No=entry.No, Price=entry.Price, Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market, Sort=entry.Sort)
+            values(Title=entry.Title, Url=entry.Url, Number=entry.Number, Price=entry.Price, Popularity=entry.Popularity, UpdateStr=entry.UpdateStr, Market=entry.Market, Sort=entry.Sort)
         connection.execute(stmt)
 
     def updateentrys(self, entrys):
@@ -44,10 +44,10 @@ class Shoe(Base):
             for entry in entrys:
                 stmt = ShoeTable.update(). \
                     where(ShoeTable.c.Id == entry.Id). \
-                    values(Title=entry.Title, Url=entry.Url, No=entry.No,
+                    values(Title=entry.Title, Url=entry.Url, Number=entry.Number,
                            Price=entry.Price,
                            Sort=entry.Sort,
-                           Popularity=entry.Popularity, Update=entry.Update, Market=entry.Market)
+                           Popularity=entry.Popularity, UpdateStr=entry.UpdateStr, Market=entry.Market)
                 connection.execute(stmt)
             trans.commit()
         except Exception, e:
@@ -75,10 +75,10 @@ class Shoe(Base):
         shoe.Id = row['Id']
         shoe.Title = row['Title']
         shoe.Url = row['Url']
-        shoe.No = row['No']
+        shoe.Number = row['Number']
         shoe.Price = row['Price']
         shoe.Popularity = row['Popularity']
-        shoe.Update = row['Update']
+        shoe.UpdateStr = row['UpdateStr']
         shoe.Market = row['Market']
         shoe.Sort = row['Sort']
         return shoe
@@ -93,10 +93,10 @@ class Shoe(Base):
         shoe.Id = row['Id']
         shoe.Title = row['Title']
         shoe.Url = row['Url']
-        shoe.No = row['No']
+        shoe.Number = row['Number']
         shoe.Price = row['Price']
         shoe.Popularity = row['Popularity']
-        shoe.Update = row['Update']
+        shoe.UpdateStr = row['UpdateStr']
         shoe.Market = row['Market']
         return shoe
 

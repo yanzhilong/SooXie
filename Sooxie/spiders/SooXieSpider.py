@@ -32,9 +32,11 @@ class SooXieSpider(scrapy.Spider):
     # 定义入口网址
     start_urls = [baseurl + str(page), ]
     shoeuls = []
+    isinit = False
     def parse(self, response):
 
         global shoeuls
+
         # # 增加
         # shoedomain = ShoeDomain()
         # shoedomain.Id = str(uuid.uuid1())
@@ -80,8 +82,10 @@ class SooXieSpider(scrapy.Spider):
         # print(shoe.Title)
 
         # db.create_table()
-        # self.deleteall()
-        # return
+        if not self.isinit:
+            self.deleteall()
+            self.isinit = True
+        return
         shoe = ShoeDomain()
         shoe.Id = str(uuid.uuid1())
         print(u"处理当前页面" + str(self.page))
@@ -166,25 +170,25 @@ class SooXieSpider(scrapy.Spider):
         # print(shoe.Title)
 
         shoe.Title = shoe.Title.strip()
-        shoe.No = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
+        shoe.Number = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
         shoe.Price = response.css("div.xgr_3_h div.xgr_3p em::text").extract_first()
         sizestmp  = response.css("div.xgr_3_h div.xgr_3p")[3].css("li::attr(datavalue)").extract()
         shoe.Sizes = self.operatorsizes(sizestmp)
         popularityandupdate = response.css("div.xgr_3_h div.xgr_3p")[2].css("strong")
         shoe.Popularity = popularityandupdate[0].css("strong::text").extract_first()
         if len(popularityandupdate) > 1:
-            shoe.Update = popularityandupdate[1].css("strong font::text").extract_first()
-            if shoe.Update == u'超半年未更新请联系商家确定是否下架！':
+            shoe.UpdateStr = popularityandupdate[1].css("strong font::text").extract_first()
+            if shoe.UpdateStr == u'超半年未更新请联系商家确定是否下架！':
                 yield self.operatoruls()
-            if shoe.Update == u"今日新款，放心上传":
+            if shoe.UpdateStr == u"今日新款，放心上传":
                 shoe.Sort = 0
-            elif shoe.Update == u"三日新款，放心上传":
+            elif shoe.UpdateStr == u"三日新款，放心上传":
                 shoe.Sort = 1
-            elif shoe.Update == u"七日新款，放心上传":
+            elif shoe.UpdateStr == u"七日新款，放心上传":
                 shoe.Sort = 2
-            elif shoe.Update == u"本月更新，可以上传":
+            elif shoe.UpdateStr == u"本月更新，可以上传":
                 shoe.Sort = 3
-            elif shoe.Update == u"三月内更新，可以上传":
+            elif shoe.UpdateStr == u"三月内更新，可以上传":
                 shoe.Sort = 4
             else:
                 shoe.Sort = 100
@@ -248,8 +252,8 @@ class SooXieSpider(scrapy.Spider):
         # print(u'完成第 %d 个商品' % self.count + u'的爬虫')
         print(shoenew.Title)
         # yield shoe
-        return SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, No=shoenew.No, Price=shoenew.Price,
-                         Popularity=shoenew.Popularity, Update=shoenew.Update, Market=shoenew.Market, Sort=shoenew.Sort,
+        return SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, Number=shoenew.Number, Price=shoenew.Price,
+                         Popularity=shoenew.Popularity, UpdateStr=shoenew.UpdateStr, Market=shoenew.Market, Sort=shoenew.Sort,
                          Sizes=shoenew.Sizes, Colors=shoenew.Colors, Images=shoenew.Images,
                          MainImages=shoenew.MainImages, Properties=shoenew.Properties)
 
