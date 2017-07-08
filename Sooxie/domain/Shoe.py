@@ -67,3 +67,13 @@ class Color:
         self.Id = None
         self.Name = None
         self.ShoeId = None
+
+
+# 淘宝属性实体
+class TbProperty:
+
+    def __init__(self):
+        self.Id = None
+        self.Name = None
+        self.ValueKey = None
+        self.TbPropertyCategoryId = None

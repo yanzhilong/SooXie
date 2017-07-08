@@ -59,6 +59,13 @@ ColorTable = Table('sx_color', metadata,
               Column('ShoeId', None, ForeignKey('sx_shoe.Id')),
               )
 
+# 淘宝属性实体
+TbPropertyTable = Table('tb_property', metadata,
+              Column('Id', String(36), primary_key=True),
+              Column('Name', String(45)),
+              Column('ValueKey', String(45)),
+              Column('TbPropertyCategoryId', String(36)),
+              )
 
 def init_db_engine(connect_str):
     global engine
