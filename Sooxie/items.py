@@ -24,3 +24,8 @@ class SooxieItem(scrapy.Item):
     Images = scrapy.Field()
     MainImages = scrapy.Field()
     Properties = scrapy.Field()
+
+
+class ImageItem(scrapy.Item):
+    Url = scrapy.Field()
+    Path = scrapy.Field()

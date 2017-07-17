@@ -11,6 +11,7 @@ from Sooxie.db.mainimage import MainImage as MainImageDb
 from Sooxie.db.property import Property as PropertyDb
 from Sooxie.db.size import Size as SizeDb
 from Sooxie.db.color import Color as ColorDb
+from scrapy.exceptions import DropItem
 
 
 class SooxiePipeline(object):
@@ -19,6 +20,8 @@ class SooxiePipeline(object):
 
     def process_item(self, item, spider):
         print(u'最后保存')
+        if self.fileter(item) is None:
+            raise DropItem(u"不符合")
         # 增加
         shoedomain = ShoeDomain()
         shoedomain.Id = item['Id']
@@ -52,9 +55,41 @@ class SooxiePipeline(object):
 
         return item
 
-    # def process_item(self, item, spider):
-    #     print(u'最后保存')
+    # 过滤数据
+    def fileter(self, item):
+        shoedomain = ShoeDomain()
+        shoedomain.Id = item['Id']
+        shoedomain.Title = item['Title']
+        shoedomain.Url = item['Url']
+        shoedomain.Number = item['Number']
+        shoedomain.Price = item['Price']
+        shoedomain.Popularity = item['Popularity']
+        shoedomain.UpdateStr = item['UpdateStr']
+        shoedomain.Market = item['Market']
+        shoedomain.Sort = item['Sort']
+        shoedomain.Sizes = item['Sizes']
+        shoedomain.Colors = item['Colors']
+        shoedomain.Images = item['Images']
+        shoedomain.MainImages = item['MainImages']
+        shoedomain.Properties = item['Properties']
+        # 判断属性
+        for pro in shoedomain.Properties:
+            if pro.Name == u"雪地靴":
+                return None
+        # 判断标题
+        if u"女" in shoedomain.Title:
+            return None
+        # 判断尺码，没有42以上的就是女鞋
+            checksize = False;
+        for size in shoedomain.Sizes:
+            if size.Num == u"42":
+                checksize = True
+                break
+        if not checksize:
+            return None
 
+        # 结束
+        return item
 
     def close_spider(self, spider):
         print(u'爬虫关闭')

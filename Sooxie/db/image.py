@@ -3,6 +3,7 @@ from base import Base
 from Sooxie import db
 from Sooxie.db import ImageTable
 from Sooxie.domain.Shoe import Shoe as ShoeDomain
+from Sooxie.domain.Shoe import Image as ImageDomain
 from sqlalchemy.sql import select
 
 
@@ -72,6 +73,19 @@ class Image(Base):
         shoe.Sort = row['Sort']
         shoe.ShoeId = row['ShoeId']
         return shoe
+
+    def getentrys(self):
+        connection = db.engine.connect()
+        s = select([ImageTable])
+        imageslist = []
+        for row in connection.execute(s):
+            image = ImageDomain()
+            image.Id = row['Id']
+            image.Url = row['Url']
+            image.Sort = row['Sort']
+            image.ShoeId = row['ShoeId']
+            imageslist.append(image)
+        return imageslist
 
     def deleteall(self):
         connection = db.engine.connect()

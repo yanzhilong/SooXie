@@ -36,7 +36,7 @@ class SooXieSpider(scrapy.Spider):
     def parse(self, response):
 
         global shoeuls
-
+        global count
         # # 增加
         # shoedomain = ShoeDomain()
         # shoedomain.Id = str(uuid.uuid1())
@@ -85,38 +85,44 @@ class SooXieSpider(scrapy.Spider):
         if not self.isinit:
             self.deleteall()
             self.isinit = True
-        return
-        shoe = ShoeDomain()
-        shoe.Id = str(uuid.uuid1())
+        # return
+
         print(u"处理当前页面" + str(self.page))
         # 得到所有的鞋子当前页的主页面数据
         shoeuls = response.css("ul.pro")
-        # shoeldetaillinks = []
-        # for ul in shoeuls:
-        #     # self.log(u'循环遍历第%d页的商品' % self.page)
-        #     shoe.Market = ul.css("a.scico::text").extract_first()
-        #     # print(u"市场:" + shoe.market)
-        #     price_num = ul.css("li.rz div.left strong::text").extract_first()
-        #     # 判断幸福街市场及价格
-        #     if shoe.Market is not None and shoe.Market == u"幸福街市场" and 10 < float(price_num) < 50:
-        #         # 得到链接并请求这个页面
-        #         details_link = ul.css("li.img a::attr(href)").extract_first()
-        #         if details_link is not None:
-        #             print (u"详情url" + details_link)
-        #             shoeldetaillinks.append(details_link)
-        #             count += 1
-        #             print (u"处理第" + str(count) + u"个商品")
-        #             发起一个请求并由详情页面处理
-        #             yield scrapy.Request(details_link, callback=shoeoperator.show_details, meta={"shoe": shoe})
+        shoeldetaillinks = []
+        count = 0;
+        for ul in shoeuls:
+            shoe = ShoeDomain()
+            shoe.Id = str(uuid.uuid1())
+            # self.log(u'循环遍历第%d页的商品' % self.page)
+            shoe.Market = ul.css("a.scico::text").extract_first()
+            # print(u"市场:" + shoe.market)
+            price_num = ul.css("li.rz div.left strong::text").extract_first()
+            # 判断幸福街市场及价格
+            if shoe.Market is not None and shoe.Market == u"幸福街市场" and 10 < float(price_num) < 50:
+                # 得到链接并请求这个页面
+                details_link = ul.css("li.img a::attr(href)").extract_first()
+                if details_link is not None:
+                    print (u"详情url" + details_link)
+                    shoeldetaillinks.append(details_link)
+                    self.count += 1
+                    print (u"处理第" + str(self.count) + u"个商品")
+                    # 发起一个请求并由详情页面处理
+                    yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
+                    count = count + 1
+                    if count == 2:
+                        return
 
         # 得到下一页的链接并打开
-        # self.page += 1
-        # yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
-        yield self.operatoruls()
+        self.page += 1
+        if self.page < 1:
+            yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
+        # yield self.operatoruls()
 
     def makeshoeurls(self):
         self.page += 1
-        return scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
+        yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
 
     def operatoruls(self):
         print(u'到达operatoruls')
@@ -137,7 +143,7 @@ class SooXieSpider(scrapy.Spider):
                 # count += 1
                 # print (u"处理第" + str(count) + u"个商品")
                 # 发起一个请求并由详情页面处理
-                return scrapy.Request(details_link, callback=self.show_details, errback=self.operatoruls, meta={"shoe": shoe})
+                return scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
             else:
                 return self.operatoruls()
         else:
@@ -179,7 +185,7 @@ class SooXieSpider(scrapy.Spider):
         if len(popularityandupdate) > 1:
             shoe.UpdateStr = popularityandupdate[1].css("strong font::text").extract_first()
             if shoe.UpdateStr == u'超半年未更新请联系商家确定是否下架！':
-                yield self.operatoruls()
+                return
             if shoe.UpdateStr == u"今日新款，放心上传":
                 shoe.Sort = 0
             elif shoe.UpdateStr == u"三日新款，放心上传":
@@ -211,7 +217,6 @@ class SooXieSpider(scrapy.Spider):
         yield FormRequest(url=healurl,
                             formdata={'p': "xd", 'id': shoeid},
                             callback=self.getHead,
-                            errback=self.operatoruls,
                             meta={"shoe": shoe, "shoeid": shoeid})
 
     def getHead(self, response):
@@ -221,14 +226,13 @@ class SooXieSpider(scrapy.Spider):
         propertyemp = response.css("ul.attributes-list li::text").extract()
         shoe.Properties = self.operatorpropertys(propertyemp)
         if shoe.Properties is None or len(shoe.Properties) == 0:
-            yield self.operatoruls()
+            return
         # 请求主图列表
         healurl = response.urljoin("/handler/loadImgHandler.ashx")
         # 继续请求主要属性参数
-        yield FormRequest(url=healurl,
+        return FormRequest(url=healurl,
                             formdata={'p': "xd", 'id': shoeid},
                             callback=self.getImages,
-                            errback=self.operatoruls,
                             meta={"shoe": shoe})
 
     def get_shoe_id(self,url):
@@ -243,8 +247,7 @@ class SooXieSpider(scrapy.Spider):
         shoe = response.meta["shoe"]
         mainimagestmp = response.css("img::attr(bimg)").extract()
         shoe.MainImages = self.operatormainimages(mainimagestmp)
-        yield self.operatoruls()
-        yield self.last_action(shoe)
+        return self.last_action(shoe)
 
     def last_action(self, shoe):
         # self.count += 1
