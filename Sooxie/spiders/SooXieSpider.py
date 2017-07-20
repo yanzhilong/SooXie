@@ -110,13 +110,13 @@ class SooXieSpider(scrapy.Spider):
                     print (u"处理第" + str(self.count) + u"个商品")
                     # 发起一个请求并由详情页面处理
                     yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
-                    count = count + 1
-                    if count == 2:
-                        return
+                    # count = count + 1
+                    # if count == 2:
+                    #     return
 
         # 得到下一页的链接并打开
         self.page += 1
-        if self.page < 1:
+        if self.page < 100:
             yield scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
         # yield self.operatoruls()
 
