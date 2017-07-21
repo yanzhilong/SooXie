@@ -24,7 +24,8 @@ import re
 import uuid
 from scrapy import FormRequest
 from Sooxie.Repertorys.Repertory import Repertory
-
+from PIL import ImageFile
+ImageFile.LOAD_TRUNCATED_IMAGES = True
 
 # 下载图片
 class SooXieSpider(scrapy.Spider):
@@ -79,7 +80,7 @@ class SooXieSpider(scrapy.Spider):
         filename = "d:\\sooxie\\"
         filepath = ""
         # 将正则表达式编译成Pattern对象
-        pattern = re.compile(r'/(?:.(?!/))+$')
+        pattern = re.compile(r'\d{6,}.*.(jpg|png|gif)')
         # 使用Pattern匹配文本，获得匹配结果，无法匹配时将返回None
         match = re.search(pattern, url)
         if match is None:
@@ -108,7 +109,7 @@ class SooXieSpider(scrapy.Spider):
         filename = "d:\\sooxie\\csv\\"
         filepath = ""
         # 将正则表达式编译成Pattern对象
-        pattern = re.compile(r'\d.*\.')
+        pattern = re.compile(r'\d{6,}.*\.')
         # 使用Pattern匹配文本，获得匹配结果，无法匹配时将返回None
         match = re.search(pattern, url)
         # print(url)
