@@ -19,9 +19,10 @@ class SooxiePipeline(object):
         print(u'开始爬虫')
 
     def process_item(self, item, spider):
-        print(u'最后保存')
+
         if self.fileter(item) is None:
             raise DropItem(u"不符合")
+        print(u'最后保存')
         # 增加
         shoedomain = ShoeDomain()
         shoedomain.Id = item['Id']
@@ -35,7 +36,7 @@ class SooxiePipeline(object):
         shoedomain.Sort = item['Sort']
         shoedomain.Sizes = item['Sizes']
         shoedomain.Colors = item['Colors']
-        shoedomain.Images = item['Images']
+        # shoedomain.Images = item['Images']
         shoedomain.MainImages = item['MainImages']
         shoedomain.Properties = item['Properties']
 
@@ -47,7 +48,7 @@ class SooxiePipeline(object):
         colordb = ColorDb()
 
         shoedb.addentry(shoedomain)
-        imagedb.addentrys(shoedomain.Images)
+        # imagedb.addentrys(shoedomain.Images)
         mainimagedb.addentrys(shoedomain.MainImages)
         propertydb.addentrys(shoedomain.Properties)
         sizedb.addentrys(shoedomain.Sizes)
@@ -80,7 +81,7 @@ class SooxiePipeline(object):
         if u"女" in shoedomain.Title:
             return None
         # 判断尺码，没有42以上的就是女鞋
-            checksize = False;
+        checksize = False;
         for size in shoedomain.Sizes:
             if size.Num == u"42":
                 checksize = True
