@@ -28,19 +28,22 @@ from Sooxie.Repertorys.Repertory import Repertory
 
 
 class SooXieSpider(scrapy.Spider):
-    name = "SooXie"
+    name = "CustomSooXie"
 
-    page = 1  # 页数
+    page = 0  # 页数
     count = 0  # 宝贝计数
-    baseurl = "https://www.sooxie.com/?r=all&Page="  # 爬虫首页
 
     # 定义入口网址
-    start_urls = [baseurl + str(page), ]
+    start_urls = [
+        'https://sooxie.com/?s=%E8%B6%B3%E6%AD%A5%E5%A4%A9%E4%B8%8B+1200&min=&max=',
+    ]
+
 
     isinit = False
     def parse(self, response):
 
         global shoeuls
+
         global count
         # # 增加
         # shoedomain = ShoeDomain()
@@ -92,7 +95,7 @@ class SooXieSpider(scrapy.Spider):
             self.isinit = True
         # return
 
-        print(u"处理当前页面" + str(self.page))
+        print(u"处理当前页面" + str(self.page + 1))
         # 得到所有的鞋子当前页的主页面数据
         shoeulpage = response.css("ul.pro")
         for ul in shoeulpage:
@@ -123,9 +126,8 @@ class SooXieSpider(scrapy.Spider):
 
         # 得到下一页的链接并打开
         self.page += 1
-        if self.page < 20:
-            return scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
-        return self.operatorul1s()
+        if self.page == len(self.start_urls):
+            return self.operatorul1s()
 
     def makeshoeurls(self):
         print(u"makeshoeurls")
