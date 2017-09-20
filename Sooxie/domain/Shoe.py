@@ -20,6 +20,13 @@ class Shoe:
         self.MainImages = None
         self.Properties = None
 
+# 公司实体
+class Company:
+    def __init__(self):
+        self.Id = None
+        self.Title = None
+        self.Url = None
+        self.UpdateAt = None  # 更新时间
 
 # 详情图实体
 class Image:
