@@ -2,17 +2,9 @@
 import scrapy
 from Sooxie.domain.Sooxie import *
 from Sooxie.domain.Shoe import Shoe as ShoeDomain
-from Sooxie.domain.Shoe import Image as ImageDomain
 from Sooxie.domain.Shoe import MainImage as MainImageDomain
-from Sooxie.domain.Shoe import Property as PropertyDomain
-from Sooxie.domain.Shoe import Size as SizeDomain
-from Sooxie.domain.Shoe import Color as ColorDomain
 from Sooxie.db.shoe import Shoe as ShoeDb
-from Sooxie.db.image import Image as ImageDb
 from Sooxie.db.mainimage import MainImage as MainImageDb
-from Sooxie.db.property import Property as PropertyDb
-from Sooxie.db.size import Size as SizeDb
-from Sooxie.db.color import Color as ColorDb
 from Sooxie.items import SooxieItem
 from Sooxie import db
 

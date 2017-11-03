@@ -3,17 +3,9 @@ import scrapy
 import time
 from Sooxie.domain.Sooxie import *
 from Sooxie.domain.Shoe import Shoe as ShoeDomain
-from Sooxie.domain.Shoe import Image as ImageDomain
 from Sooxie.domain.Shoe import MainImage as MainImageDomain
-from Sooxie.domain.Shoe import Property as PropertyDomain
-from Sooxie.domain.Shoe import Size as SizeDomain
-from Sooxie.domain.Shoe import Color as ColorDomain
 from Sooxie.db.shoe import Shoe as ShoeDb
-from Sooxie.db.image import Image as ImageDb
 from Sooxie.db.mainimage import MainImage as MainImageDb
-from Sooxie.db.property import Property as PropertyDb
-from Sooxie.db.size import Size as SizeDb
-from Sooxie.db.color import Color as ColorDb
 from Sooxie.items import SooxieItem
 from Sooxie import db
 
@@ -123,7 +115,7 @@ class SooXieSpider(scrapy.Spider):
 
         # 得到下一页的链接并打开
         self.page += 1
-        if self.page < 20:
+        if self.page < 100:
             return scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
         return self.operatorul1s()
 
@@ -180,36 +172,16 @@ class SooXieSpider(scrapy.Spider):
             shoe = ShoeDomain()
             shoe.Id = str(uuid.uuid1())
             shoe.Market = ul.css("a.scico::text").extract_first()
-            # print(u"市场:" + shoe.market)
-            price_num = ul.css("li.rz div.left strong::text").extract_first()
-            # 判断幸福街市场及价格
-            if shoe.Market is not None and shoe.Market == u"幸福街市场":
-                # 得到链接并请求这个页面
-                details_link = ul.css("li.img a::attr(href)").extract_first()
-                if details_link is not None:
-                    print (u"详情url" + details_link)
-                    # count += 1
-                    # print (u"处理第" + str(count) + u"个商品")
-                    # 发起一个请求并由详情页面处理
-                    yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
-                else:
-                    print (u"url不符合")
-            else:
-                print (u"不是幸福街:" + shoe.Market + price_num)
+            details_link = ul.css("li.img a::attr(href)").extract_first()
+            if details_link is not None:
+                print (u"详情url" + details_link)
+                # count += 1
+                # print (u"处理第" + str(count) + u"个商品")
+                # 发起一个请求并由详情页面处理
+                yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
 
     def deleteall(self):
         shoedb = ShoeDb()
-        imagedb = ImageDb()
-        mainimagedb = MainImageDb()
-        property = PropertyDb()
-        sizedb = SizeDb()
-        colordb = ColorDb()
-
-        imagedb.deleteall()
-        mainimagedb.deleteall()
-        property.deleteall()
-        sizedb.deleteall()
-        colordb.deleteall()
         shoedb.deleteall()
 
     # 搜鞋的详情页面
@@ -227,7 +199,6 @@ class SooXieSpider(scrapy.Spider):
         shoe.Number = response.css("div.xgr_3_h div.xgr_3p strong::text").extract_first()
         shoe.Price = response.css("div.xgr_3_h div.xgr_3p em::text").extract_first()
         sizestmp  = response.css("div.xgr_3_h div.xgr_3p")[3].css("li::attr(datavalue)").extract()
-        shoe.Sizes = self.operatorsizes(sizestmp)
         popularityandupdate = response.css("div.xgr_3_h div.xgr_3p")[2].css("strong")
         shoe.Popularity = popularityandupdate[0].css("strong::text").extract_first()
         if len(popularityandupdate) > 1:
@@ -248,20 +219,11 @@ class SooXieSpider(scrapy.Spider):
                 shoe.Sort = 4
             else:
                 shoe.Sort = 100
-            if shoe.Sort > 2:
-                print(u'超过七日')
-                # yield self.operatoruls()
-                return
         else:
             print(u'没找到更新时间')
             # yield self.operatoruls()
             return
-        colorstmp = response.css("div.xgr_3_h div.xgr_3p")[4].css("li::attr(datavalue)").extract()
-        shoe.Colors = self.operatorcolors(colorstmp)
-        # imagestmp = response.css("div.xgr_5 img.scrollLoading::attr(data-url)").extract()
-        # self.log(u'图片大小')
-        # self.log(imagestmp)
-        # shoe.Images = self.operatorimages(imagestmp)
+
         shoeid = self.get_shoe_id(response.url)
         # shoe.No = shoeid
         # 请求鞋子参数
@@ -271,37 +233,7 @@ class SooXieSpider(scrapy.Spider):
         # print(u"详情页title")
         # print(shoe.Title)
 
-        # 继续请求主要属性参数
-        yield FormRequest(url=healurl,
-                            formdata={'p': "xd", 'id': shoeid},
-                            callback=self.getHead,
-                            meta={"shoe": shoe, "shoeid": shoeid})
-
-        # yield self.operatoruls()
-    def getHead(self, response):
-        print(u'到达请求鞋子属性页面')
-        shoe = response.meta["shoe"]
-        shoeid = response.meta["shoeid"]
-        propertyemp = response.css("ul.attributes-list li::text").extract()
-        shoe.Properties = self.operatorpropertys(propertyemp)
-        if shoe.Properties is None or len(shoe.Properties) == 0:
-            print(u'没有属性')
-            shoe.Properties = []
-        # shoenew = self.operatorshoe(shoe)
-        # yield SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, Number=shoenew.Number,
-        #                   Price=shoenew.Price,
-        #                   Popularity=shoenew.Popularity, UpdateStr=shoenew.UpdateStr, Market=shoenew.Market,
-        #                   Sort=shoenew.Sort,
-        #                   Sizes=shoenew.Sizes, Colors=shoenew.Colors, Images=shoenew.Images,
-        #                   MainImages=shoenew.MainImages, Properties=shoenew.Properties)
-
-        # 请求主图列表
-        healurl = response.urljoin("/handler/loadImgHandler.ashx")
-        # 继续请求主要属性参数
-        return FormRequest(url=healurl,
-                            formdata={'p': "xd", 'id': shoeid},
-                            callback=self.getImages,
-                            meta={"shoe": shoe})
+        return self.last_action(shoe)
 
     def get_shoe_id(self,url):
         p1 = "\\d+"  # 这是我们写的正则表达式规则，你现在可以不理解啥意思
@@ -310,90 +242,18 @@ class SooXieSpider(scrapy.Spider):
         pageid = matcher1.group(0)  # 打印出来
         return pageid
 
-    def getImages(self, response):
-        print(u'到达请求鞋子主图页面')
-        shoe = response.meta["shoe"]
-        mainimagestmp = response.css("img::attr(bimg)").extract()
-        shoe.MainImages = self.operatormainimages(mainimagestmp)
-        return self.last_action(shoe)
-
     def last_action(self, shoe):
         # self.count += 1
-        shoenew = self.operatorshoe(shoe)
+        shoe.Id = str(uuid.uuid1())
         print(u'完成第 %d 个商品' % self.count + u'的爬虫')
         # print(shoenew.Title)
         # yield shoe
-        return SooxieItem(Id=shoenew.Id, Title=shoenew.Title, Url=shoenew.Url, Number=shoenew.Number, Price=shoenew.Price,
-                         Popularity=shoenew.Popularity, UpdateStr=shoenew.UpdateStr, Market=shoenew.Market, Sort=shoenew.Sort,
-                         Sizes=shoenew.Sizes, Colors=shoenew.Colors, Images=shoenew.Images,
-                         MainImages=shoenew.MainImages, Properties=shoenew.Properties)
+        return SooxieItem(Id=shoe.Id, Title=shoe.Title, Url=shoe.Url, Number=shoe.Number, Price=shoe.Price,
+                         Popularity=shoe.Popularity, UpdateStr=shoe.UpdateStr, Market=shoe.Market, Sort=shoe.Sort)
 
-    def operatorsizes(self, list):
-        sizeslist = []
-        for si in list:
-            size = SizeDomain()
-            size.Id = str(uuid.uuid1())
-            size.Num = si
-            sizeslist.append(size)
-        return sizeslist
-
-    def operatorcolors(self, list):
-        colorlist = []
-        for col in list:
-            color = ColorDomain()
-            color.Id = str(uuid.uuid1())
-            color.Name = col
-            colorlist.append(color)
-        return colorlist
-
-    def operatorimages(self, list):
-        imageslist = []
-        sort = 0
-        for ima in list:
-            image = ImageDomain()
-            image.Id = str(uuid.uuid1())
-            image.Url = ima
-            image.Sort = sort
-            imageslist.append(image)
-            sort += 1
-        return imageslist
-
-    def operatorpropertys(self, list):
-        propertylist = []
-        for pro in list:
-            property = PropertyDomain()
-            property.Id = str(uuid.uuid1())
-            property.Name = pro.split(": ")[0]
-            property.Value = pro.split(": ")[1]
-            propertylist.append(property)
-        return propertylist
-
-    def operatormainimages(self, list):
-        mainimagelist = []
-        sort = 0
-        for ima in list:
-            mainimage = MainImageDomain()
-            mainimage.Id = str(uuid.uuid1())
-            mainimage.Url = ima
-            mainimage.Sort = sort
-            if mainimage.Url == u"":
-                continue
-            mainimagelist.append(mainimage)
-            sort += 1
-        return mainimagelist
 
     def operatorshoe(self, shoe):
         shoe.Id = str(uuid.uuid1())
-        for size in shoe.Sizes:
-            size.ShoeId = shoe.Id
-            size.Id = str(uuid.uuid1())
-        for col in shoe.Colors:
-            col.ShoeId = shoe.Id
-            col.Id = str(uuid.uuid1())
-
-        for pro in shoe.Properties:
-            pro.ShoeId = shoe.Id
-            pro.Id = str(uuid.uuid1())
         for mima in shoe.MainImages:
             mima.ShoeId = shoe.Id
             mima.Id = str(uuid.uuid1())

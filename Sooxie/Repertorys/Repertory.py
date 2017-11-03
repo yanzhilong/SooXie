@@ -18,12 +18,6 @@ ShoeTable = Table('shoe', metadata,
              Column('Market', String(50)),
              )
 
-# 详情图实体
-ImageTable = Table('Image', metadata,
-              Column('Id', String(36), primary_key=True),
-              Column('Url', String(50)),
-              Column('ShoeId', None, ForeignKey('shoe.Id')),
-              )
 
 # 主图实体
 MainImageTable = Table('MainImage', metadata,
@@ -31,27 +25,6 @@ MainImageTable = Table('MainImage', metadata,
                   Column('Url', String(50)),
                   Column('ShoeId', None, ForeignKey('shoe.Id')),
                   )
-
-# 属性实体
-PropertyTable = Table('Property', metadata,
-                 Column('Id', String(36), primary_key=True),
-                 Column('Name', String(50)),
-                 Column('ShoeId', None, ForeignKey('shoe.Id')),
-                 )
-
-# 尺码实体
-Size = Table('Size', metadata,
-             Column('Id', String(36), primary_key=True),
-             Column('Num', String(50)),
-             Column('ShoeId', None, ForeignKey('shoe.Id')),
-             )
-
-# 颜色实体
-Color = Table('Color', metadata,
-              Column('Id', String(36), primary_key=True),
-              Column('Name', String(50)),
-              Column('ShoeId', None, ForeignKey('shoe.Id')),
-              )
 
 
 class Repertory:

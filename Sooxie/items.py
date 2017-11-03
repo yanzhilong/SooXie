@@ -19,11 +19,7 @@ class SooxieItem(scrapy.Item):
     UpdateStr = scrapy.Field()
     Market = scrapy.Field()
     Sort = scrapy.Field()
-    Sizes = scrapy.Field()
-    Colors = scrapy.Field()
-    Images = scrapy.Field()
     MainImages = scrapy.Field()
-    Properties = scrapy.Field()
 
 class SooxieCompany(scrapy.Item):
     # define the fields for your item here like:
