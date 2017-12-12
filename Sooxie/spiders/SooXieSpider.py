@@ -24,6 +24,7 @@ class SooXieSpider(scrapy.Spider):
 
     page = 1  # 页数
     count = 0  # 宝贝计数
+    errorcount = 0  # 出错宝贝计数
     baseurl = "https://www.sooxie.com/?r=all&Page="  # 爬虫首页
 
     # 定义入口网址
@@ -115,60 +116,17 @@ class SooXieSpider(scrapy.Spider):
 
         # 得到下一页的链接并打开
         self.page += 1
-        if self.page < 100:
+        if self.page < 5:
             return scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
-        return self.operatorul1s()
+        return self.operatorurls()
 
-    def makeshoeurls(self):
-        print(u"makeshoeurls")
-        self.page += 1
-        print(u"makeshoeurls" + str(self.page))
-        if self.page < 20:
-            print(u"当前页面" + str(self.page))
-            return scrapy.Request(self.baseurl + str(self.page), callback=self.parse)
-        else:
-            print(u"结束页面" + str(self.page))
-            return None
+    def operatorurls(self):
 
-    def operatoruls(self):
-        print(u'到达operatoruls' + str(self.page))
-        time.sleep(1)
-        if len(shoeuls) == 0:
-            print(u"operatoruls" + str(len(shoeuls)))
-            yield None
-        else:
+        ul = self.popurls()
+        if ul is not None:
             self.count += 1
             print (u"处理第" + str(self.count) + u"个商品")
-            ul = shoeuls.pop(0)
-            shoe = ShoeDomain()
-            shoe.Id = str(uuid.uuid1())
-            shoe.Market = ul.css("a.scico::text").extract_first()
-            # print(u"市场:" + shoe.market)
-            price_num = ul.css("li.rz div.left strong::text").extract_first()
-            # 判断幸福街市场及价格
-            if shoe.Market is not None and shoe.Market == u"幸福街市场" and 10 < float(price_num) < 50:
-                # 得到链接并请求这个页面
-                details_link = ul.css("li.img a::attr(href)").extract_first()
-                if details_link is not None:
-                    print (u"详情url" + details_link)
-                    # count += 1
-                    # print (u"处理第" + str(count) + u"个商品")
-                    # 发起一个请求并由详情页面处理
-                    yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
-                else:
-                    print (u"url不符合")
-            else:
-                print (u"不是幸福街:" + shoe.Market + price_num)
-            print (u"继续")
-            yield self.operatoruls()
-
-    def operatorul1s(self):
-
-        global shoeuls
-        for ul in shoeuls:
-            # time.sleep(10)
-            self.count += 1
-            print (u"处理第" + str(self.count) + u"个商品")
+            print (u"还有" + str(len(shoeuls)) + u"个商品")
             shoe = ShoeDomain()
             shoe.Id = str(uuid.uuid1())
             shoe.Market = ul.css("a.scico::text").extract_first()
@@ -178,7 +136,29 @@ class SooXieSpider(scrapy.Spider):
                 # count += 1
                 # print (u"处理第" + str(count) + u"个商品")
                 # 发起一个请求并由详情页面处理
-                yield scrapy.Request(details_link, callback=self.show_details, meta={"shoe": shoe})
+                return scrapy.Request(details_link, callback=self.show_details, dont_filter=True, errback=self.detailserror, meta={"shoe": shoe})
+            else:
+                return self.operatorurls()
+
+        # for ul in shoeuls:
+        #     # time.sleep(10)
+
+    def detailserror(self, failure):
+        global errorcount
+        self.errorcount += 1
+        print(u'总共 %d 个商品' % self.errorcount + u'个商品爬虫失败')
+        return self.operatorurls()
+
+    def popurls(self):
+
+        print (u"操作url")
+        global shoeuls
+        if len(shoeuls) > 0:
+            ul = shoeuls[0]
+            del shoeuls[0]
+            return ul
+        else:
+            return None;
 
     def deleteall(self):
         shoedb = ShoeDb()
@@ -205,8 +185,7 @@ class SooXieSpider(scrapy.Spider):
             shoe.UpdateStr = popularityandupdate[1].css("strong font::text").extract_first()
             if shoe.UpdateStr == u'超半年未更新请联系商家确定是否下架！':
                 print(u'超半年未更新')
-                # yield self.operatoruls()
-                return
+                return self.operatoruls()
             if shoe.UpdateStr == u"今日新款，放心上传":
                 shoe.Sort = 0
             elif shoe.UpdateStr == u"三日新款，放心上传":
@@ -221,8 +200,7 @@ class SooXieSpider(scrapy.Spider):
                 shoe.Sort = 100
         else:
             print(u'没找到更新时间')
-            # yield self.operatoruls()
-            return
+            return None
 
         shoeid = self.get_shoe_id(response.url)
         # shoe.No = shoeid
@@ -245,11 +223,15 @@ class SooXieSpider(scrapy.Spider):
     def last_action(self, shoe):
         # self.count += 1
         shoe.Id = str(uuid.uuid1())
-        print(u'完成第 %d 个商品' % self.count + u'的爬虫')
-        # print(shoenew.Title)
-        # yield shoe
-        return SooxieItem(Id=shoe.Id, Title=shoe.Title, Url=shoe.Url, Number=shoe.Number, Price=shoe.Price,
+
+        yield SooxieItem(Id=shoe.Id, Title=shoe.Title, Url=shoe.Url, Number=shoe.Number, Price=shoe.Price,
                          Popularity=shoe.Popularity, UpdateStr=shoe.UpdateStr, Market=shoe.Market, Sort=shoe.Sort)
+        print(u'完成第 %d 个商品' % self.count + u'的爬虫')
+        global errorcount
+        print(u'总共 %d 个商品' % self.errorcount + u'个商品爬虫失败')
+
+        # print(shoenew.Title)
+        yield self.operatorurls()
 
 
     def operatorshoe(self, shoe):
